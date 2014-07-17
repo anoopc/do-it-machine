@@ -15,11 +15,14 @@ def get_parser():
     parser.add_argument('directory',
                         help='destination directory')
 
-    parser.add_argument('--include_hidden', default=False,
+    parser.add_argument('--include_hidden', action='store_true',
                         help='includes hidden directories (Excludes by Default)')
 
     parser.add_argument('--filter_target',
                         help='only include directories which have a specified file/directory in it')
+
+    parser.add_argument('--dry_run', action='store_true',
+                        help='prints out what is it going to do, doesn\'t do anything')
 
     return parser
 
@@ -42,10 +45,17 @@ def should_process_file(absolute_filepath, base_filename, input_settings):
     return False
 
 def execute_command_in_directory(directory, input_settings):
-    print 'Execute command under directory:' + directory
+    command_list = []
     switch_to_directory_command = 'cd "{}"'.format(directory)
-    os.system(switch_to_directory_command)
-    os.system(input_settings.command)
+    command_list.append(switch_to_directory_command)
+    command_list.append(input_settings.command)
+
+    final_execution_command = ';'.join(command_list)
+    print '\n\n' + "-" * 80 + '\nWill Execute command: ' + final_execution_command
+    if input_settings.dry_run:
+        print '[DRY_RUN (Not Executing))]'
+    else:
+        os.system(final_execution_command)
 
 def process_directory(directory, input_settings):
     if should_execute_command_in_Directory(directory, input_settings):
